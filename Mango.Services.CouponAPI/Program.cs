@@ -1,4 +1,3 @@
-
 using AutoMapper;
 using Mango.Services.CouponAPI.Data;
 using Mango.Services.CouponAPI.Extensions;
