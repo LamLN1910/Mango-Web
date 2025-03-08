@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Mango.Services.ShoppingCartAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/cart")]
     [ApiController]
     public class CartAPIController : ControllerBase
     {
@@ -119,7 +119,7 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         }
 
         [HttpPost("RemoveCart")]
-        public async Task<ResponseDto> RemoveCart([FromBody] int cartDetailsId)
+        public async Task<object> RemoveCart([FromBody] int cartDetailsId)
         {
             try
             {
