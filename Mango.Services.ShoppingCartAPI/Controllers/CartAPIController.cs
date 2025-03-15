@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Mango.MessageBus;
 using Mango.Services.ShoppingCartAPI.Data;
 using Mango.Services.ShoppingCartAPI.Model;
 using Mango.Services.ShoppingCartAPI.Model.Dto;
@@ -18,13 +19,17 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
         private readonly AppDbContext _db;
         private readonly IProductService _productService;
         private readonly ICouponService _couponService;
-        public CartAPIController(IMapper mapper, AppDbContext db, IProductService productService, ICouponService couponService)
+        private readonly IConfiguration _configuration;
+        private readonly IMessageBus _messageBus;
+        public CartAPIController(IMapper mapper, AppDbContext db, IProductService productService, ICouponService couponService, IMessageBus messageBus, IConfiguration configuration)
         {
             _mapper = mapper;
             _db = db;
             _responseDto = new ResponseDto();
             _productService = productService;
             _couponService = couponService;
+            _messageBus = messageBus;
+            _configuration = configuration;
         }
 
         [HttpGet("GetCart/{userId}")]
@@ -156,6 +161,22 @@ namespace Mango.Services.ShoppingCartAPI.Controllers
                 cartFromDb.CouponCode = cartDto.CartHeader.CouponCode;
                 _db.CartHeaders.Update(cartFromDb);
                 await _db.SaveChangesAsync();
+                _responseDto.Result = true;
+            }
+            catch (Exception e)
+            {
+                _responseDto.IsSuccess = false;
+                _responseDto.Message = e.Message.ToString();
+            }
+            return _responseDto;
+        }
+
+        [HttpPost("EmailCartRequest")]
+        public async Task<ResponseDto> EmailCartRequest([FromBody] CartDto cartDto)
+        {
+            try
+            {
+                await _messageBus.PublishMessage(cartDto, _configuration.GetValue<string>("TopicAndQueueNames:EmailShoppingCart"));
                 _responseDto.Result = true;
             }
             catch (Exception e)
