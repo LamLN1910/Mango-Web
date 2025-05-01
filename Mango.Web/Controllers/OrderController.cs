@@ -1,6 +1,7 @@
 ﻿using Mango.Web.Models;
 using Mango.Web.Service.IService;
 using Mango.Web.Utility;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
@@ -15,13 +16,14 @@ namespace Mango.Web.Controllers
             _orderService = orderService;
         }
 
+        [Authorize]
         public IActionResult OrderIndex()
         {
             return View();
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public IActionResult GetAll(string status)
         {
             IEnumerable<OrderHeaderDto> list;
             string userId = "";
@@ -33,6 +35,20 @@ namespace Mango.Web.Controllers
             if (responseDto != null && responseDto.IsSuccess)
             {
                 list = JsonConvert.DeserializeObject<List<OrderHeaderDto>>(Convert.ToString(responseDto.Result));
+                switch (status)
+                {
+                    case "approved":
+                        list = list.Where(u => u.Status == SD.Status_Approved);
+                        break;
+                    case "readyforpickup":
+                        list = list.Where(u => u.Status == SD.Status_ReadyForPickup);
+                        break;
+                    case "cancelled":
+                        list = list.Where(u => u.Status == SD.Status_Cancelled);
+                        break;
+                    default:
+                        break;
+                }
             }
             else
             {
@@ -41,6 +57,7 @@ namespace Mango.Web.Controllers
             return Json(new { data = list });
         }
 
+        [Authorize]
         public async Task<IActionResult> OrderDetail(int orderId)
         {
             OrderHeaderDto orderHeaderDto = new OrderHeaderDto();

@@ -1,14 +1,26 @@
 ﻿var dataTable
 
 $(document).ready(function () {
-    loadDataTable();
+    var url = window.location.search;
+    if (url.includes("approved")) {
+        loadDataTable("approved");
+    }
+    else if (url.includes("readyforpickup")) {
+        loadDataTable("readyforpickup");
+    }
+    else if (url.includes("cancelled")) {
+        loadDataTable("cancelled");
+    }
+    else {
+        loadDataTable("all");
+    }
 });
 
-function loadDataTable() {
+function loadDataTable(status) {
     dataTable = $('#tblData').DataTable({
         order: [[0, 'desc']],
         ajax: {
-            url: '/Order/GetAll',
+            url: "/Order/getall?status=" + status,
         },
         columns: [
             { data: 'orderHeaderId', name: 'orderHeaderId', autoWidth: true },
